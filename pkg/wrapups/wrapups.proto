@@ -1,0 +1,74 @@
+/**
+ * wrapups.proto
+ *
+ * Define Wrapups service and related messaages.
+ */
+syntax = "proto3";
+
+package wrapups;
+
+import "google/protobuf/timestamp.proto";
+
+/**
+ * Service for handling wrapup management.
+ */
+service Wrapups {
+    rpc ListWrapups(ListWrapupsRequest) returns (ListWrapupsResponse) {}
+    rpc GetWrapup(GetWrapupRequest) returns (Wrapup) {}
+    rpc CreateWrapup(CreateWrapupRequest) returns (Wrapup) {}
+}
+
+/**
+ * Wrapup represents one wrapup object.
+ */
+message Wrapup {
+    // ID of the wrapup object assigned by Elasticsearch.
+    string id = 1;
+    // title of the paper.
+    string title = 2;
+    // wrapup of the paper.
+    string wrapup = 3;
+    // comment of the paper.
+    string comment = 4;
+    // notes of the paper.
+    string note = 5;
+    // timestamp which indicates when this wrapup object is created.
+    google.protobuf.Timestamp create_time = 6;
+}
+
+/**
+ * ListWrapupsRequest represents the request message for List operation.
+ */
+message ListWrapupsRequest {}
+
+/**
+ * ListWrapupsResponse represents the response of List operation.
+ */
+message ListWrapupsResponse {
+    // number of wrapup objects included in this response.
+    int32 count = 1;
+    // list of wrapup object.
+    repeated Wrapup wrapups = 2;
+}
+
+/**
+ * GetWrapupRequest represents the request message for Get operation.
+ */
+message GetWrapupRequest {
+    // id to fetch specific wrapup object from Elasticsearch server.
+    string id = 1;
+}
+
+/**
+ * CreateWrapupRequest represents the request message for Create operation.
+ */
+message CreateWrapupRequest {
+    // title of paper.
+    string title = 1;
+    // wrapup of paper.
+    string wrapup = 2;
+    // comment of paper.
+    string comment = 3;
+    // note of paper.
+    string note = 4;
+}
