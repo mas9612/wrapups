@@ -1,11 +1,11 @@
 GOBIN=go
 PROTOCBIN=protoc
-BINNAME=wrapups
+SERVER=wuserver
 
 all: dep test build-grpc build doc
 
 build:
-	$(GOBIN) build ./cmd/wrapups -o $(BINNAME)
+	$(GOBIN) build -o $(SERVER) ./cmd/wuserver
 
 test:
 	$(GOBIN) test -v ./...
@@ -18,7 +18,7 @@ doc:
 
 clean:
 	$(GOBIN) clean
-	rm -f $(BINNAME)
+	rm -f $(SERVER)
 
 dep:
 	dep ensure
