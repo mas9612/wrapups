@@ -1,0 +1,21 @@
+version: 3
+services:
+  wuserver:
+    replicas: 1
+    build: .
+    dockerfile: Dockerfile.test
+    image: wrapups-server
+    networks:
+      - backend
+
+  elasticsearch:
+    replicas: 1
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.6.2
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - backend
+
+networks:
+  backend:
