@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -45,7 +46,29 @@ func newWrapupsServer() (pb.WrapupsServer, error) {
 }
 
 func (s *wrapupsServer) ListWrapups(context.Context, *pb.ListWrapupsRequest) (*pb.ListWrapupsResponse, error) {
-	return nil, nil
+	client, err := elastic.NewClient(elastic.SetSniff(false))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to initialize Elasticsearch client")
+	}
+
+	result, err := client.Search("wrapups").Query(elastic.NewMatchAllQuery()).Do(context.Background())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get documents from Elasticsearch")
+	}
+
+	wrapups := make([]*pb.Wrapup, 0, result.TotalHits())
+	for _, hit := range result.Hits.Hits {
+		var wrapup pb.Wrapup
+		if err := json.Unmarshal(*hit.Source, &wrapup); err != nil {
+			return nil, errors.Wrap(err, "failed to Unmarshal response to JSON")
+		}
+		wrapups = append(wrapups, &wrapup)
+	}
+
+	return &pb.ListWrapupsResponse{
+		Count:   int32(result.TotalHits()),
+		Wrapups: wrapups,
+	}, nil
 }
 
 func (s *wrapupsServer) GetWrapup(context.Context, *pb.GetWrapupRequest) (*pb.Wrapup, error) {
