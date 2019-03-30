@@ -3,10 +3,46 @@ package main
 import (
 	"context"
 
+	"github.com/golang/protobuf/ptypes"
+	"github.com/golang/protobuf/ptypes/timestamp"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
+	"github.com/olivere/elastic"
+	"github.com/pkg/errors"
 )
 
-type wrapupsServer struct{}
+const (
+	defaultIndexName = "wrapups"
+	typ              = "_doc"
+)
+
+type wrapupsServer struct {
+	client *elastic.Client
+	index  string
+}
+
+func newWrapupsServer() (pb.WrapupsServer, error) {
+	client, err := elastic.NewClient(elastic.SetSniff(false))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to initialize Elasticsearch client")
+	}
+
+	exists, err := client.IndexExists(defaultIndexName).Do(context.Background())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to check whether index exists")
+	}
+	if !exists {
+		_, err := client.CreateIndex(defaultIndexName).Do(context.Background())
+		if err != nil {
+			return nil, errors.Wrapf(err, "failed to create index \"%s\"", defaultIndexName)
+		}
+	}
+
+	wuServer := &wrapupsServer{
+		client: client,
+		index:  defaultIndexName,
+	}
+	return wuServer, nil
+}
 
 func (s *wrapupsServer) ListWrapups(context.Context, *pb.ListWrapupsRequest) (*pb.ListWrapupsResponse, error) {
 	return nil, nil
@@ -16,6 +52,29 @@ func (s *wrapupsServer) GetWrapup(context.Context, *pb.GetWrapupRequest) (*pb.Wr
 	return nil, nil
 }
 
-func (s *wrapupsServer) CreateWrapup(context.Context, *pb.CreateWrapupRequest) (*pb.Wrapup, error) {
-	return nil, nil
+func (s *wrapupsServer) CreateWrapup(ctx context.Context, req *pb.CreateWrapupRequest) (*pb.Wrapup, error) {
+	if req.Title == "" {
+		return nil, errors.New("Title is required")
+	}
+
+	r := struct {
+		pb.CreateWrapupRequest
+		CreateTime *timestamp.Timestamp
+	}{
+		*req,
+		ptypes.TimestampNow(),
+	}
+	res, err := s.client.Index().Index(s.index).Type(typ).BodyJson(r).Do(context.Background())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create new document")
+	}
+	doc := &pb.Wrapup{
+		Id:         res.Id,
+		Title:      req.Title,
+		Wrapup:     req.Wrapup,
+		Comment:    req.Comment,
+		Note:       req.Note,
+		CreateTime: r.CreateTime,
+	}
+	return doc, nil
 }

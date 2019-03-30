@@ -20,6 +20,11 @@ func main() {
 	defer listener.Close()
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterWrapupsServer(grpcServer, &wrapupsServer{})
+	wuServer, err := newWrapupsServer()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "server initialization failed: %v\n", err)
+		os.Exit(1)
+	}
+	pb.RegisterWrapupsServer(grpcServer, wuServer)
 	log.Fatal(grpcServer.Serve(listener))
 }
