@@ -13,8 +13,11 @@ import "google/protobuf/timestamp.proto";
  * Service for handling wrapup management.
  */
 service Wrapups {
+    // ListWrapups returns the list of wrapup document stored in Elasticsearch.
     rpc ListWrapups(ListWrapupsRequest) returns (ListWrapupsResponse) {}
+    // GetWrapup returns a wrapup document matched to request.
     rpc GetWrapup(GetWrapupRequest) returns (Wrapup) {}
+    // CreateWrapup creates new wrapup document and stores it in Elasticsearch.
     rpc CreateWrapup(CreateWrapupRequest) returns (Wrapup) {}
 }
 

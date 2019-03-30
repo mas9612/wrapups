@@ -120,9 +120,9 @@ Service for handling wrapup management.
 
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
-| ListWrapups | [ListWrapupsRequest](#wrapups.ListWrapupsRequest) | [ListWrapupsResponse](#wrapups.ListWrapupsResponse) |  |
-| GetWrapup | [GetWrapupRequest](#wrapups.GetWrapupRequest) | [Wrapup](#wrapups.Wrapup) |  |
-| CreateWrapup | [CreateWrapupRequest](#wrapups.CreateWrapupRequest) | [Wrapup](#wrapups.Wrapup) |  |
+| ListWrapups | [ListWrapupsRequest](#wrapups.ListWrapupsRequest) | [ListWrapupsResponse](#wrapups.ListWrapupsResponse) | ListWrapups returns the list of wrapup document stored in Elasticsearch. |
+| GetWrapup | [GetWrapupRequest](#wrapups.GetWrapupRequest) | [Wrapup](#wrapups.Wrapup) | GetWrapup returns a wrapup document matched to request. |
+| CreateWrapup | [CreateWrapupRequest](#wrapups.CreateWrapupRequest) | [Wrapup](#wrapups.Wrapup) | CreateWrapup creates new wrapup document and stores it in Elasticsearch. |
 
  
 
