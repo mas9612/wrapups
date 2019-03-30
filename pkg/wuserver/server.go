@@ -1,4 +1,4 @@
-package main
+package wuserver
 
 import (
 	"context"
@@ -16,12 +16,15 @@ const (
 	typ              = "_doc"
 )
 
-type wrapupsServer struct {
+// WrapupsServer is the implementation of pb.WrapupsServer.
+type WrapupsServer struct {
 	client *elastic.Client
 	index  string
 }
 
-func newWrapupsServer() (pb.WrapupsServer, error) {
+// NewWrapupsServer creates and returns new WrapupsServer instance.
+// This method also create index for Elasticsearch if necessary.
+func NewWrapupsServer() (pb.WrapupsServer, error) {
 	client, err := elastic.NewClient(elastic.SetSniff(false))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to initialize Elasticsearch client")
@@ -38,14 +41,15 @@ func newWrapupsServer() (pb.WrapupsServer, error) {
 		}
 	}
 
-	wuServer := &wrapupsServer{
+	wuServer := &WrapupsServer{
 		client: client,
 		index:  defaultIndexName,
 	}
 	return wuServer, nil
 }
 
-func (s *wrapupsServer) ListWrapups(context.Context, *pb.ListWrapupsRequest) (*pb.ListWrapupsResponse, error) {
+// ListWrapups returns the list of wrapup document stored in Elasticsearch.
+func (s *WrapupsServer) ListWrapups(context.Context, *pb.ListWrapupsRequest) (*pb.ListWrapupsResponse, error) {
 	client, err := elastic.NewClient(elastic.SetSniff(false))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to initialize Elasticsearch client")
@@ -71,11 +75,13 @@ func (s *wrapupsServer) ListWrapups(context.Context, *pb.ListWrapupsRequest) (*p
 	}, nil
 }
 
-func (s *wrapupsServer) GetWrapup(context.Context, *pb.GetWrapupRequest) (*pb.Wrapup, error) {
+// GetWrapup returns a wrapup document matched to request.
+func (s *WrapupsServer) GetWrapup(context.Context, *pb.GetWrapupRequest) (*pb.Wrapup, error) {
 	return nil, nil
 }
 
-func (s *wrapupsServer) CreateWrapup(ctx context.Context, req *pb.CreateWrapupRequest) (*pb.Wrapup, error) {
+// CreateWrapup creates new wrapup document and stores it in Elasticsearch.
+func (s *WrapupsServer) CreateWrapup(ctx context.Context, req *pb.CreateWrapupRequest) (*pb.Wrapup, error) {
 	if req.Title == "" {
 		return nil, errors.New("Title is required")
 	}

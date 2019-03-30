@@ -7,6 +7,7 @@ import (
 	"os"
 
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
+	"github.com/mas9612/wrapups/pkg/wuserver"
 
 	"google.golang.org/grpc"
 )
@@ -20,7 +21,7 @@ func main() {
 	defer listener.Close()
 
 	grpcServer := grpc.NewServer()
-	wuServer, err := newWrapupsServer()
+	wuServer, err := wuserver.NewWrapupsServer()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "server initialization failed: %v\n", err)
 		os.Exit(1)

@@ -353,8 +353,11 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type WrapupsClient interface {
+	// ListWrapups returns the list of wrapup document stored in Elasticsearch.
 	ListWrapups(ctx context.Context, in *ListWrapupsRequest, opts ...grpc.CallOption) (*ListWrapupsResponse, error)
+	// GetWrapup returns a wrapup document matched to request.
 	GetWrapup(ctx context.Context, in *GetWrapupRequest, opts ...grpc.CallOption) (*Wrapup, error)
+	// CreateWrapup creates new wrapup document and stores it in Elasticsearch.
 	CreateWrapup(ctx context.Context, in *CreateWrapupRequest, opts ...grpc.CallOption) (*Wrapup, error)
 }
 
@@ -395,8 +398,11 @@ func (c *wrapupsClient) CreateWrapup(ctx context.Context, in *CreateWrapupReques
 
 // WrapupsServer is the server API for Wrapups service.
 type WrapupsServer interface {
+	// ListWrapups returns the list of wrapup document stored in Elasticsearch.
 	ListWrapups(context.Context, *ListWrapupsRequest) (*ListWrapupsResponse, error)
+	// GetWrapup returns a wrapup document matched to request.
 	GetWrapup(context.Context, *GetWrapupRequest) (*Wrapup, error)
+	// CreateWrapup creates new wrapup document and stores it in Elasticsearch.
 	CreateWrapup(context.Context, *CreateWrapupRequest) (*Wrapup, error)
 }
 
