@@ -51,7 +51,7 @@ func (s *wrapupsServer) ListWrapups(context.Context, *pb.ListWrapupsRequest) (*p
 		return nil, errors.Wrap(err, "failed to initialize Elasticsearch client")
 	}
 
-	result, err := client.Search("wrapups").Query(elastic.NewMatchAllQuery()).Do(context.Background())
+	result, err := client.Search(s.index).Query(elastic.NewMatchAllQuery()).Do(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get documents from Elasticsearch")
 	}
