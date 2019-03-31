@@ -1,3 +1,3 @@
 # wrapups
 
-Paper wrapup mangement system.
+Paper wrapup management system.
