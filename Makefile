@@ -11,11 +11,11 @@ build: build-server build-client
 
 .PHONY: build-server
 build-server:
-	$(GOBIN) build -o $(SERVER) ./cmd/wuserver
+	CGO_ENABLED=0 $(GOBIN) build -o $(SERVER) ./cmd/wuserver
 
 .PHONY: build-client
 build-client:
-	$(GOBIN) build -o $(CLIENT) ./cmd/wuclient
+	CGO_ENABLED=0 $(GOBIN) build -o $(CLIENT) ./cmd/wuclient
 
 .PHONY: test
 test:
