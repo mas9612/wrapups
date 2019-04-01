@@ -3,48 +3,68 @@ package wuserver
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
 	"github.com/olivere/elastic"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
 	defaultIndexName = "wrapups"
 	typ              = "_doc"
+
+	internalErrorMsg = "internal server error occured. please try again later."
 )
 
 // WrapupsServer is the implementation of pb.WrapupsServer.
 type WrapupsServer struct {
 	client *elastic.Client
 	index  string
+	logger *zap.Logger
 }
 
 // NewWrapupsServer creates and returns new WrapupsServer instance.
 // This method also create index for Elasticsearch if necessary.
 func NewWrapupsServer() (pb.WrapupsServer, error) {
+	logger, _ := zap.NewProduction()
+	wuServer := &WrapupsServer{
+		logger: logger,
+	}
+
+	logger.Info("initializing Elasticsearch client")
 	client, err := elastic.NewClient(elastic.SetSniff(false))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to initialize Elasticsearch client")
+		errMsg := "failed to initialize Elasticsearch client"
+		logger.Error(errMsg, zap.Error(err))
+		return nil, errors.Wrap(err, errMsg)
 	}
 
 	exists, err := client.IndexExists(defaultIndexName).Do(context.Background())
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to check whether index exists")
+		errMsg := "failed to check whether index exists"
+		logger.Error(errMsg, zap.Error(err))
+		return nil, errors.Wrap(err, errMsg)
 	}
 	if !exists {
+		logger.Info(fmt.Sprintf("index \"%s\" not found. creating", defaultIndexName))
 		_, err := client.CreateIndex(defaultIndexName).Do(context.Background())
 		if err != nil {
-			return nil, errors.Wrapf(err, "failed to create index \"%s\"", defaultIndexName)
+			errMsg := fmt.Sprintf("failed to create index \"%s\"", defaultIndexName)
+			logger.Error(errMsg, zap.Error(err))
+			return nil, errors.Wrapf(err, errMsg)
 		}
 	}
 
-	wuServer := &WrapupsServer{
-		client: client,
-		index:  defaultIndexName,
-	}
+	wuServer.client = client
+	wuServer.index = defaultIndexName
+	logger.Info("server initialization finished")
+
 	return wuServer, nil
 }
 
@@ -52,14 +72,18 @@ func NewWrapupsServer() (pb.WrapupsServer, error) {
 func (s *WrapupsServer) ListWrapups(ctx context.Context, req *pb.ListWrapupsRequest) (*pb.ListWrapupsResponse, error) {
 	result, err := s.client.Search(s.index).Query(elastic.NewMatchAllQuery()).Do(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get documents from Elasticsearch")
+		errMsg := "failed to get documents from Elasticsearch"
+		s.logger.Error(errMsg, zap.Error(err))
+		return nil, status.Error(codes.Internal, internalErrorMsg)
 	}
 
 	wrapups := make([]*pb.Wrapup, 0, result.TotalHits())
 	for _, hit := range result.Hits.Hits {
 		var wrapup pb.Wrapup
 		if err := json.Unmarshal(*hit.Source, &wrapup); err != nil {
-			return nil, errors.Wrap(err, "failed to Unmarshal response to JSON")
+			errMsg := "failed to Unmarshal response to JSON"
+			s.logger.Error(errMsg, zap.Error(err))
+			return nil, status.Error(codes.Internal, internalErrorMsg)
 		}
 		wrapups = append(wrapups, &wrapup)
 	}
@@ -73,17 +97,23 @@ func (s *WrapupsServer) ListWrapups(ctx context.Context, req *pb.ListWrapupsRequ
 // GetWrapup returns a wrapup document matched to request.
 func (s *WrapupsServer) GetWrapup(ctx context.Context, req *pb.GetWrapupRequest) (*pb.Wrapup, error) {
 	if req.Id == "" {
-		return nil, errors.New("Id is required")
+		errMsg := "Id is required"
+		s.logger.Error(errMsg)
+		return nil, status.Error(codes.InvalidArgument, errMsg)
 	}
 
 	result, err := s.client.Get().Index(s.index).Id(req.Id).Do(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get document from Elasticsearch")
+		errMsg := "failed to get document from Elasticsearch"
+		s.logger.Error(errMsg, zap.Error(err))
+		return nil, status.Error(codes.Internal, internalErrorMsg)
 	}
 
 	doc := &pb.Wrapup{}
 	if err := json.Unmarshal(*result.Source, doc); err != nil {
-		return nil, errors.Wrap(err, "failed to Unmarshal response to JSON")
+		errMsg := "failed to Unmarshal response to JSON"
+		s.logger.Error(errMsg, zap.Error(err))
+		return nil, status.Error(codes.Internal, internalErrorMsg)
 	}
 	doc.Id = result.Id
 	return doc, nil
@@ -92,8 +122,12 @@ func (s *WrapupsServer) GetWrapup(ctx context.Context, req *pb.GetWrapupRequest)
 // CreateWrapup creates new wrapup document and stores it in Elasticsearch.
 func (s *WrapupsServer) CreateWrapup(ctx context.Context, req *pb.CreateWrapupRequest) (*pb.Wrapup, error) {
 	if req.Title == "" {
-		return nil, errors.New("Title is required")
+		errMsg := "Title is required"
+		s.logger.Error(errMsg)
+		return nil, status.Error(codes.InvalidArgument, errMsg)
 	}
+	// TODO: check if document which has requested title has already exist
+	// if so, return codes.AlreadyExists
 
 	r := struct {
 		pb.CreateWrapupRequest
@@ -104,7 +138,9 @@ func (s *WrapupsServer) CreateWrapup(ctx context.Context, req *pb.CreateWrapupRe
 	}
 	res, err := s.client.Index().Index(s.index).Type(typ).BodyJson(r).Do(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create new document")
+		errMsg := "failed to create new document"
+		s.logger.Error(errMsg, zap.Error(err))
+		return nil, status.Error(codes.Internal, internalErrorMsg)
 	}
 	doc := &pb.Wrapup{
 		Id:         res.Id,
