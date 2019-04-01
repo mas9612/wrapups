@@ -7,8 +7,14 @@ CLIENT=wuclient
 all: dep test build-grpc build doc
 
 .PHONY: build
-build:
+build: build-server build-client
+
+.PHONY: build-server
+build-server:
 	$(GOBIN) build -o $(SERVER) ./cmd/wuserver
+
+.PHONY: build-client
+build-client:
 	$(GOBIN) build -o $(CLIENT) ./cmd/wuclient
 
 .PHONY: test
