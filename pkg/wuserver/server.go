@@ -29,16 +29,52 @@ type WrapupsServer struct {
 	logger *zap.Logger
 }
 
+type config struct {
+	url  string
+	port int
+}
+
+// Option is wrapups server option.
+type Option func(*config)
+
+// SetURL sets Elasticsearch server url.
+// Default is localhost.
+func SetURL(url string) Option {
+	return func(c *config) {
+		c.url = url
+	}
+}
+
+// SetPort sets Elasticsearch server port.
+// Default is 9200.
+func SetPort(port int) Option {
+	return func(c *config) {
+		c.port = port
+	}
+}
+
 // NewWrapupsServer creates and returns new WrapupsServer instance.
 // This method also create index for Elasticsearch if necessary.
-func NewWrapupsServer() (pb.WrapupsServer, error) {
-	logger, _ := zap.NewProduction()
+func NewWrapupsServer(logger *zap.Logger, opts ...Option) (pb.WrapupsServer, error) {
+	c := config{
+		url:  "localhost",
+		port: 9200,
+	}
+	for _, o := range opts {
+		o(&c)
+	}
+
 	wuServer := &WrapupsServer{
 		logger: logger,
 	}
 
 	logger.Info("initializing Elasticsearch client")
-	client, err := elastic.NewClient(elastic.SetSniff(false))
+	options := make([]elastic.ClientOptionFunc, 0, 10)
+	options = append(options, elastic.SetSniff(false))
+	if c.url != "localhost" || c.port != 9200 {
+		options = append(options, elastic.SetURL(fmt.Sprintf("%s:%d", c.url, c.port)))
+	}
+	client, err := elastic.NewClient(options...)
 	if err != nil {
 		errMsg := "failed to initialize Elasticsearch client"
 		logger.Error(errMsg, zap.Error(err))
