@@ -42,7 +42,10 @@ message Wrapup {
 /**
  * ListWrapupsRequest represents the request message for List operation.
  */
-message ListWrapupsRequest {}
+message ListWrapupsRequest {
+    // filter is used to filter wrapup document to return only matched ones.
+    string filter = 1;
+}
 
 /**
  * ListWrapupsResponse represents the response of List operation.
