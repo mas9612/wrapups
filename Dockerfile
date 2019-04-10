@@ -1,7 +1,8 @@
 FROM golang:1.12.1 as build
 
-RUN go get -t -d -v github.com/mas9612/wrapups/cmd/wuserver
+RUN mkdir -p /go/src/github.com/mas9612/wrapups
 WORKDIR /go/src/github.com/mas9612/wrapups
+COPY . .
 RUN make test && make build-server
 
 
