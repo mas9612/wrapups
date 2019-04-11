@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
+	debuglogger "github.com/mas9612/wrapups/pkg/logger"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
 	"github.com/olivere/elastic"
 	"github.com/pkg/errors"
@@ -30,8 +31,9 @@ type WrapupsServer struct {
 }
 
 type config struct {
-	url  string
-	port int
+	url   string
+	port  int
+	trace bool
 }
 
 // Option is wrapups server option.
@@ -53,12 +55,21 @@ func SetPort(port int) Option {
 	}
 }
 
+// SetTrace sets whether trace log is enabled.
+// Default is false.
+func SetTrace(trace bool) Option {
+	return func(c *config) {
+		c.trace = trace
+	}
+}
+
 // NewWrapupsServer creates and returns new WrapupsServer instance.
 // This method also create index for Elasticsearch if necessary.
 func NewWrapupsServer(logger *zap.Logger, opts ...Option) (pb.WrapupsServer, error) {
 	c := config{
-		url:  "localhost",
-		port: 9200,
+		url:   "localhost",
+		port:  9200,
+		trace: false,
 	}
 	for _, o := range opts {
 		o(&c)
@@ -72,7 +83,13 @@ func NewWrapupsServer(logger *zap.Logger, opts ...Option) (pb.WrapupsServer, err
 	options := make([]elastic.ClientOptionFunc, 0, 10)
 	options = append(options, elastic.SetSniff(false))
 	if c.url != "localhost" || c.port != 9200 {
-		options = append(options, elastic.SetURL(fmt.Sprintf("%s:%d", c.url, c.port)))
+		options = append(options, elastic.SetURL(fmt.Sprintf("http://%s:%d", c.url, c.port)))
+	}
+	if c.trace {
+		l := &debuglogger.Logger{
+			Logger: logger,
+		}
+		options = append(options, elastic.SetTraceLog(l))
 	}
 	client, err := elastic.NewClient(options...)
 	if err != nil {
