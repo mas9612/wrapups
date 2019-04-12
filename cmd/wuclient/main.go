@@ -18,6 +18,9 @@ func main() {
 		"get": func() (cli.Command, error) {
 			return &command.GetCommand{}, nil
 		},
+		"create": func() (cli.Command, error) {
+			return &command.CreateCommand{}, nil
+		},
 	}
 
 	exitStatus, err := c.Run()
