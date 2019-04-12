@@ -138,6 +138,7 @@ func (s *WrapupsServer) ListWrapups(ctx context.Context, req *pb.ListWrapupsRequ
 			s.logger.Error(errMsg, zap.Error(err))
 			return nil, status.Error(codes.Internal, internalErrorMsg)
 		}
+		wrapup.Id = hit.Id
 		wrapups = append(wrapups, &wrapup)
 	}
 
@@ -184,7 +185,7 @@ func (s *WrapupsServer) CreateWrapup(ctx context.Context, req *pb.CreateWrapupRe
 
 	r := struct {
 		pb.CreateWrapupRequest
-		CreateTime *timestamp.Timestamp
+		CreateTime *timestamp.Timestamp `json:"create_time"`
 	}{
 		*req,
 		ptypes.TimestampNow(),
