@@ -13,5 +13,5 @@ type Logger struct {
 
 // Printf prints given message with zap package.
 func (l *Logger) Printf(format string, v ...interface{}) {
-	l.Logger.Debug("debug log", zap.String("msg", fmt.Sprintf(format, v...)))
+	l.Logger.Debug("debug log", zap.String("log", fmt.Sprintf(format, v...)))
 }
