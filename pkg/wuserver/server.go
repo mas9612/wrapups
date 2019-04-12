@@ -158,6 +158,10 @@ func (s *WrapupsServer) GetWrapup(ctx context.Context, req *pb.GetWrapupRequest)
 
 	result, err := s.client.Get().Index(s.index).Id(req.Id).Do(ctx)
 	if err != nil {
+		if elastic.IsNotFound(err) {
+			errMsg := fmt.Sprintf("ID %s not found", req.Id)
+			return nil, status.Error(codes.NotFound, errMsg)
+		}
 		errMsg := "failed to get document from Elasticsearch"
 		s.logger.Error(errMsg, zap.Error(err))
 		return nil, status.Error(codes.Internal, internalErrorMsg)

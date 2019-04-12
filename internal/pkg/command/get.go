@@ -11,26 +11,29 @@ import (
 	"google.golang.org/grpc"
 )
 
-// ListCommand implements list subcommand.
-type ListCommand struct{}
+// GetCommand implements get subcommand.
+type GetCommand struct{}
 
-// Help returns the long-form help text of list subcommand.
-func (c *ListCommand) Help() string {
+// Help returns the long-form help text of get subcommand.
+func (c *GetCommand) Help() string {
 	helpText := `
-Usage: wuclient list
-  List wrapup documents.
+Usage: wuclient get <id>
+  Get wrapup document.
 `
 	return strings.TrimSpace(helpText)
 }
 
-type listOptions struct {
+type getOptions struct {
 	Addr string `short:"a" long:"address" default:"localhost" description:"Wrapups server address. (default is localhost)"`
 	Port int    `short:"p" long:"port" default:"10000" description:"Wrapups server port. (default is 10000)"`
+	Args struct {
+		ID string `description:"Wrapup document ID."`
+	} `positional-args:"yes" required:"yes"`
 }
 
-// Run runs list subcommand and returns exit status.
-func (c *ListCommand) Run(args []string) int {
-	opts := listOptions{}
+// Run runs get subcommand and returns exit status.
+func (c *GetCommand) Run(args []string) int {
+	opts := getOptions{}
 	parser := flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
 	if _, err := parser.ParseArgs(args); err != nil {
 		flagsErr := err.(*flags.Error)
@@ -50,23 +53,21 @@ func (c *ListCommand) Run(args []string) int {
 	defer conn.Close()
 	client := pb.NewWrapupsClient(conn)
 
-	req := &pb.ListWrapupsRequest{}
-	res, err := client.ListWrapups(context.Background(), req)
+	req := &pb.GetWrapupRequest{
+		Id: opts.Args.ID,
+	}
+	res, err := client.GetWrapup(context.Background(), req)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to get response: %v\n", err)
+		fmt.Fprintf(os.Stderr, "failed to get document: %v\n", err)
 		return 1
 	}
 
-	fmt.Printf("Count: %d\n", res.Count)
-	for _, wrapup := range res.Wrapups {
-		printWrapup(wrapup)
-		fmt.Print("\n")
-	}
+	printWrapup(res)
 
 	return 0
 }
 
-// Synopsis returns one-line synopsis of list subcommamd.
-func (c *ListCommand) Synopsis() string {
-	return "List wrapup documents."
+// Synopsis returns one-line synopsis of get subcommamd.
+func (c *GetCommand) Synopsis() string {
+	return "Get wrapup document."
 }

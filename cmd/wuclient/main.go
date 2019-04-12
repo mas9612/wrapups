@@ -15,6 +15,9 @@ func main() {
 		"list": func() (cli.Command, error) {
 			return &command.ListCommand{}, nil
 		},
+		"get": func() (cli.Command, error) {
+			return &command.GetCommand{}, nil
+		},
 	}
 
 	exitStatus, err := c.Run()
