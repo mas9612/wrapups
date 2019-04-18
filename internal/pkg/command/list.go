@@ -19,6 +19,10 @@ func (c *ListCommand) Help() string {
 	helpText := `
 Usage: wuclient list
   List wrapup documents.
+
+Options:
+  -a, --address  Elasticsearch server address (default is localhost).
+  -p, --port     Elasticsearch server port (default is 9200).
 `
 	return strings.TrimSpace(helpText)
 }

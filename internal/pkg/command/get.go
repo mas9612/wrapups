@@ -19,6 +19,10 @@ func (c *GetCommand) Help() string {
 	helpText := `
 Usage: wuclient get <id>
   Get wrapup document.
+
+Options:
+  -a, --address  Elasticsearch server address (default is localhost).
+  -p, --port     Elasticsearch server port (default is 9200).
 `
 	return strings.TrimSpace(helpText)
 }
