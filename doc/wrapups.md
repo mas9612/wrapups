@@ -67,6 +67,11 @@ GetWrapupRequest represents the request message for Get operation.
 ListWrapupsRequest represents the request message for List operation.
 
 
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| filter | [string](#string) |  | filter is used to filter wrapup document to return only matched ones. |
+
+
 
 
 

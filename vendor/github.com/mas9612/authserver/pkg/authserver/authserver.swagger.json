@@ -1,0 +1,76 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "pkg/authserver/authserver.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/oauth/token": {
+      "post": {
+        "summary": "CreateToken creates and returns new JWT token for requested identity.",
+        "operationId": "CreateToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authserverToken"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authserverCreateTokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Authserver"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "authserverCreateTokenRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string",
+          "description": "user is the username which want to be authenticate."
+        },
+        "password": {
+          "type": "string",
+          "description": "password is the credential of given user."
+        },
+        "orig_host": {
+          "type": "string",
+          "description": "orig_host is the hostname for which JWT token is valid."
+        }
+      },
+      "description": "*\nCreateTokenRequest represents the request of CreateToken."
+    },
+    "authserverToken": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "token is the JWT token."
+        }
+      },
+      "description": "*\nToken represents the response of CreateToken."
+    }
+  }
+}

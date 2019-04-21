@@ -123,7 +123,13 @@ func NewWrapupsServer(logger *zap.Logger, opts ...Option) (pb.WrapupsServer, err
 
 // ListWrapups returns the list of wrapup document stored in Elasticsearch.
 func (s *WrapupsServer) ListWrapups(ctx context.Context, req *pb.ListWrapupsRequest) (*pb.ListWrapupsResponse, error) {
-	result, err := s.client.Search(s.index).Query(elastic.NewMatchAllQuery()).Do(ctx)
+	var query elastic.Query
+	if req.Filter == "" {
+		query = elastic.NewMatchAllQuery()
+	} else {
+		query = elastic.NewMatchQuery("wrapup", req.Filter)
+	}
+	result, err := s.client.Search(s.index).Query(query).Do(ctx)
 	if err != nil {
 		errMsg := "failed to get documents from Elasticsearch"
 		s.logger.Error(errMsg, zap.Error(err))
