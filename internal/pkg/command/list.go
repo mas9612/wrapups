@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/mas9612/wrapups/pkg/auth"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 // ListCommand implements list subcommand.
@@ -42,7 +44,7 @@ func (c *ListCommand) Run(args []string) int {
 			fmt.Printf("%s\n", flagsErr.Message)
 			return 0
 		}
-		fmt.Fprintf(os.Stderr, "failed to parse command line flags: %s", err.Error())
+		fmt.Fprintf(os.Stderr, "failed to parse command line flags: %s\n", err.Error())
 		return 1
 	}
 
@@ -54,8 +56,14 @@ func (c *ListCommand) Run(args []string) int {
 	defer conn.Close()
 	client := pb.NewWrapupsClient(conn)
 
+	token, err := auth.Token()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "auth error: %s\n", err.Error())
+		return 1
+	}
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", fmt.Sprintf("bearer %s", token)))
 	req := &pb.ListWrapupsRequest{}
-	res, err := client.ListWrapups(context.Background(), req)
+	res, err := client.ListWrapups(ctx, req)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to get response: %v\n", err)
 		return 1
