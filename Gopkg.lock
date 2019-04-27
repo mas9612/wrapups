@@ -358,6 +358,7 @@
     "github.com/grpc-ecosystem/go-grpc-middleware",
     "github.com/grpc-ecosystem/go-grpc-middleware/auth",
     "github.com/jessevdk/go-flags",
+    "github.com/mas9612/authserver/pkg/authserver",
     "github.com/mas9612/authserver/pkg/server",
     "github.com/mitchellh/cli",
     "github.com/olivere/elastic",
@@ -366,6 +367,7 @@
     "go.uber.org/zap/zapcore",
     "google.golang.org/grpc",
     "google.golang.org/grpc/codes",
+    "google.golang.org/grpc/metadata",
     "google.golang.org/grpc/status",
     "gopkg.in/yaml.v2",
   ]
