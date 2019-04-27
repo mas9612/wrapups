@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/mas9612/wrapups/pkg/auth"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"gopkg.in/yaml.v2"
 )
 
@@ -76,13 +78,19 @@ func (c *CreateCommand) Run(args []string) int {
 		return 1
 	}
 
+	token, err := auth.Token()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "auth error: %s\n", err.Error())
+		return 1
+	}
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", fmt.Sprintf("bearer %s", token)))
 	req := &pb.CreateWrapupRequest{
 		Title:   data.Title,
 		Wrapup:  data.Wrapup,
 		Comment: data.Comments,
 		Note:    data.Notes,
 	}
-	res, err := client.CreateWrapup(context.Background(), req)
+	res, err := client.CreateWrapup(ctx, req)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to create document: %v\n", err)
 		return 1

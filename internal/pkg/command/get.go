@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"github.com/jessevdk/go-flags"
+	"github.com/mas9612/wrapups/pkg/auth"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 // GetCommand implements get subcommand.
@@ -57,10 +59,16 @@ func (c *GetCommand) Run(args []string) int {
 	defer conn.Close()
 	client := pb.NewWrapupsClient(conn)
 
+	token, err := auth.Token()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "auth error: %s\n", err.Error())
+		return 1
+	}
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.Pairs("authorization", fmt.Sprintf("bearer %s", token)))
 	req := &pb.GetWrapupRequest{
 		Id: opts.Args.ID,
 	}
-	res, err := client.GetWrapup(context.Background(), req)
+	res, err := client.GetWrapup(ctx, req)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to get document: %v\n", err)
 		return 1
