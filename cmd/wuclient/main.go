@@ -21,6 +21,9 @@ func main() {
 		"create": func() (cli.Command, error) {
 			return &command.CreateCommand{}, nil
 		},
+		"version": func() (cli.Command, error) {
+			return &command.VersionCommand{}, nil
+		},
 	}
 
 	exitStatus, err := c.Run()

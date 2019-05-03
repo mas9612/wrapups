@@ -12,6 +12,7 @@ import (
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/jessevdk/go-flags"
 	"github.com/mas9612/authserver/pkg/server"
+	"github.com/mas9612/wrapups/pkg/version"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
 	"github.com/mas9612/wrapups/pkg/wuserver"
 	"go.uber.org/zap"
@@ -24,9 +25,10 @@ import (
 
 type options struct {
 	Port        int    `short:"p" long:"port" description:"wrapups server port" default:"10000"`
-	ElasticAddr string `long:"elastic-addr" default:"localhost" description:"Elasticsearch server address (default: localhost)"`
-	ElasticPort int    `long:"elastic-port" default:"9200" description:"Elasticsaerch server port (default: 9200)"`
-	TraceLog    bool   `long:"trace" description:"Enable trace log. (default: false)"`
+	ElasticAddr string `long:"elastic-addr" default:"localhost" description:"Elasticsearch server address"`
+	ElasticPort int    `long:"elastic-port" default:"9200" description:"Elasticsaerch server port"`
+	TraceLog    bool   `long:"trace" description:"Enable trace log."`
+	Version     bool   `short:"v" long:"version" description:"Print wrapups version"`
 }
 
 func main() {
@@ -42,6 +44,11 @@ func main() {
 			return
 		}
 		l.Fatal("failed to parse command line flags", zap.Error(err))
+	}
+
+	if opts.Version {
+		fmt.Println(version.Version)
+		return
 	}
 
 	var logger *zap.Logger

@@ -1,7 +1,9 @@
-GOBIN=go
-PROTOCBIN=protoc
-SERVER=wuserver
-CLIENT=wuclient
+GOBIN := go
+PROTOCBIN := protoc
+SERVER := wuserver
+CLIENT := wuclient
+VERSION := v0.4
+LDFLAGS := -ldflags="-s -w -X \"github.com/mas9612/wrapups/pkg/version.Version=$(VERSION)\""
 
 .PHONY: all
 all: dep test build-grpc build doc
@@ -11,11 +13,11 @@ build: build-server build-client
 
 .PHONY: build-server
 build-server:
-	CGO_ENABLED=0 $(GOBIN) build -o $(SERVER) ./cmd/wuserver
+	CGO_ENABLED=0 $(GOBIN) build $(LDFLAGS) -o $(SERVER) ./cmd/wuserver
 
 .PHONY: build-client
 build-client:
-	CGO_ENABLED=0 $(GOBIN) build -o $(CLIENT) ./cmd/wuclient
+	CGO_ENABLED=0 $(GOBIN) build $(LDFLAGS) -o $(CLIENT) ./cmd/wuclient
 
 .PHONY: test
 test:
