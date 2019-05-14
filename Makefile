@@ -2,7 +2,7 @@ GOBIN := go
 PROTOCBIN := protoc
 SERVER := wuserver
 CLIENT := wuclient
-VERSION := v0.5
+VERSION := v0.5.1
 LDFLAGS := -ldflags="-s -w -X \"github.com/mas9612/wrapups/pkg/version.Version=$(VERSION)\""
 
 .PHONY: all
