@@ -19,16 +19,17 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	authserverUrl = "authserver.k800123.firefly.kutc.kansai-u.ac.jp:10000"
+var (
+	authserverURL = "authserver.k800123.firefly.kutc.kansai-u.ac.jp:10000"
 )
 
 type options struct {
-	Port        int    `short:"p" long:"port" description:"wrapups server port" default:"10000"`
-	ElasticAddr string `long:"elastic-addr" default:"localhost" description:"Elasticsearch server address"`
-	ElasticPort int    `long:"elastic-port" default:"9200" description:"Elasticsaerch server port"`
-	TraceLog    bool   `long:"trace" description:"Enable trace log."`
-	Version     bool   `short:"v" long:"version" description:"Print wrapups version"`
+	Port          int    `short:"p" long:"port" description:"wrapups server port" default:"10000"`
+	ElasticAddr   string `long:"elastic-addr" default:"localhost" description:"Elasticsearch server address"`
+	ElasticPort   int    `long:"elastic-port" default:"9200" description:"Elasticsaerch server port"`
+	AuthserverURL string `long:"authserver-url" default:"authserver:10000" description:"Authserver URL"`
+	TraceLog      bool   `long:"trace" description:"Enable trace log."`
+	Version       bool   `short:"v" long:"version" description:"Print wrapups version"`
 }
 
 func main() {
@@ -78,6 +79,9 @@ func main() {
 	if opts.ElasticPort != 9200 {
 		wrapupsOpts = append(wrapupsOpts, wuserver.SetPort(opts.ElasticPort))
 	}
+	if opts.AuthserverURL != "" {
+		authserverURL = opts.AuthserverURL
+	}
 	if opts.TraceLog {
 		wrapupsOpts = append(wrapupsOpts, wuserver.SetTrace(opts.TraceLog))
 	}
@@ -100,7 +104,7 @@ func authFunc(ctx context.Context) (context.Context, error) {
 		return nil, err
 	}
 
-	conn, err := grpc.Dial(authserverUrl, grpc.WithInsecure())
+	conn, err := grpc.Dial(authserverURL, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
