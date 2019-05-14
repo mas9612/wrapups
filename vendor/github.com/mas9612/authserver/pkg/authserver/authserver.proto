@@ -20,6 +20,14 @@ service Authserver {
             body: "*"
         };
     }
+
+    // ValidateToken validates given token and returns its validity.
+    rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse) {
+        option (google.api.http) = {
+            post: "/v1/validate"
+            body: "*"
+        };
+    }
 }
 
 /**
@@ -40,4 +48,22 @@ message CreateTokenRequest {
 message Token {
     // token is the JWT token.
     string token = 1;
+}
+
+/**
+ * ValidateTokenRequest represents the request of ValidateToken.
+ */
+message ValidateTokenRequest {
+    // token is the JWT token.
+    string token = 1;
+}
+
+/**
+ * ValidateTokenResponse represents the response of ValidateToken.
+ */
+message ValidateTokenResponse {
+    // valid represents whether given token is valid or not.
+    bool valid = 1;
+    // user is the authenticated username.
+    string user = 2;
 }

@@ -116,15 +116,15 @@
   revision = "1de009706dbeb9d05f18586f0735fcdb7c524481"
 
 [[projects]]
-  branch = "master"
-  digest = "1:780873b51595073e78abcab6879c8588d9e980507f8a8e2431eee96333c31c14"
+  digest = "1:b97588d4bc787a24482379ec530c797eede6b96e5241c96d24c1edea68e2b112"
   name = "github.com/mas9612/authserver"
   packages = [
     "pkg/authserver",
     "pkg/server",
   ]
   pruneopts = "UT"
-  revision = "7707268bb2d3b6a2392917844d632db5fe04b21f"
+  revision = "b6796501759379dc1a3d45b8935b2e3945004557"
+  version = "v0.2"
 
 [[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"

@@ -41,6 +41,33 @@
           "Authserver"
         ]
       }
+    },
+    "/v1/validate": {
+      "post": {
+        "summary": "ValidateToken validates given token and returns its validity.",
+        "operationId": "ValidateToken",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authserverValidateTokenResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authserverValidateTokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Authserver"
+        ]
+      }
     }
   },
   "definitions": {
@@ -71,6 +98,31 @@
         }
       },
       "description": "*\nToken represents the response of CreateToken."
+    },
+    "authserverValidateTokenRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "token is the JWT token."
+        }
+      },
+      "description": "*\nValidateTokenRequest represents the request of ValidateToken."
+    },
+    "authserverValidateTokenResponse": {
+      "type": "object",
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "valid represents whether given token is valid or not."
+        },
+        "user": {
+          "type": "string",
+          "description": "user is the authenticated username."
+        }
+      },
+      "description": "*\nValidateTokenResponse represents the response of ValidateToken."
     }
   }
 }

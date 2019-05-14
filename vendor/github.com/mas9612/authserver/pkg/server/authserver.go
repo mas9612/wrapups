@@ -26,6 +26,7 @@ type Authserver struct {
 	ldapport   int
 	userFormat string
 	pemPath    string
+	pubkeyPath string
 	issuer     string
 	audience   string
 }
@@ -35,6 +36,7 @@ type config struct {
 	ldapport   int
 	userFormat string
 	pem        string
+	pubkey     string
 	issuer     string
 	audience   string
 }
@@ -70,6 +72,14 @@ func SetPem(pem string) Option {
 	}
 }
 
+// SetPubkey sets the pubkey path used to validate JWT token.
+// Default is authserver.pub located in same directory as authserver.
+func SetPubkey(pubkey string) Option {
+	return func(c *config) {
+		c.pubkey = pubkey
+	}
+}
+
 // SetIssuer sets the issuer used in JWT claim.
 func SetIssuer(issuer string) Option {
 	return func(c *config) {
@@ -83,6 +93,7 @@ func NewAuthserver(logger *zap.Logger, opts ...Option) (pb.AuthserverServer, err
 		ldapaddr:   "localhost",
 		ldapport:   389,
 		userFormat: "%s",
+		pubkey:     "authserver.pub",
 	}
 	for _, o := range opts {
 		o(&c)
@@ -94,6 +105,7 @@ func NewAuthserver(logger *zap.Logger, opts ...Option) (pb.AuthserverServer, err
 		ldapport:   c.ldapport,
 		userFormat: c.userFormat,
 		pemPath:    c.pem,
+		pubkeyPath: c.pubkey,
 	}, nil
 }
 
@@ -160,4 +172,28 @@ func (s *Authserver) CreateToken(ctx context.Context, req *pb.CreateTokenRequest
 	return &pb.Token{
 		Token: ss,
 	}, nil
+}
+
+// ValidateToken validates given token and returns its validity.
+func (s *Authserver) ValidateToken(ctx context.Context, in *pb.ValidateTokenRequest) (*pb.ValidateTokenResponse, error) {
+	claim := AuthClaim{}
+	_, err := jwt.ParseWithClaims(in.Token, &claim, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("requested singing method is not supported")
+		}
+
+		b, err := ioutil.ReadFile(s.pubkeyPath)
+		if err != nil {
+			return nil, err
+		}
+		verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(b)
+		if err != nil {
+			return nil, err
+		}
+		return verifyKey, nil
+	})
+	if err != nil {
+		return &pb.ValidateTokenResponse{Valid: false}, status.Error(codes.Unauthenticated, fmt.Sprintf("failed to verify token: %s", err.Error()))
+	}
+	return &pb.ValidateTokenResponse{Valid: true, User: claim.User}, nil
 }

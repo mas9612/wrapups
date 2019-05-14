@@ -3,15 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 
-	"github.com/dgrijalva/jwt-go"
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/jessevdk/go-flags"
-	"github.com/mas9612/authserver/pkg/server"
+	auth_pb "github.com/mas9612/authserver/pkg/authserver"
 	"github.com/mas9612/wrapups/pkg/version"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
 	"github.com/mas9612/wrapups/pkg/wuserver"
@@ -19,8 +17,10 @@ import (
 	"go.uber.org/zap/zapcore"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+)
+
+const (
+	authserverUrl = "authserver.k800123.firefly.kutc.kansai-u.ac.jp:10000"
 )
 
 type options struct {
@@ -100,25 +100,23 @@ func authFunc(ctx context.Context) (context.Context, error) {
 		return nil, err
 	}
 
-	claim := server.AuthClaim{}
-	_, err = jwt.ParseWithClaims(token, &claim, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("requested signing method is not supported")
-		}
-
-		b, err := ioutil.ReadFile("./authserver.pub")
-		if err != nil {
-			return nil, err
-		}
-		verifyKey, err := jwt.ParseRSAPublicKeyFromPEM(b)
-		if err != nil {
-			return nil, err
-		}
-		return verifyKey, nil
-	})
+	conn, err := grpc.Dial(authserverUrl, grpc.WithInsecure())
 	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, fmt.Sprintf("failed to verify token: %s", err.Error()))
+		return nil, err
+	}
+	defer conn.Close()
+
+	client := auth_pb.NewAuthserverClient(conn)
+	req := &auth_pb.ValidateTokenRequest{
+		Token: token,
+	}
+	res, err := client.ValidateToken(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if !res.Valid {
+		return nil, err
 	}
 
-	return context.WithValue(ctx, "user", claim.User), nil
+	return context.WithValue(ctx, "user", res.User), nil
 }
