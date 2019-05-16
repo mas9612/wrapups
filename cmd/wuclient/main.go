@@ -4,25 +4,33 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jessevdk/go-flags"
 	"github.com/mas9612/wrapups/internal/pkg/command"
+	"github.com/mas9612/wrapups/pkg/config"
+	"github.com/mas9612/wrapups/pkg/version"
 	"github.com/mitchellh/cli"
 )
 
 func main() {
-	c := cli.NewCLI("wuclient", "v0.2.1")
-	c.Args = os.Args[1:]
+	conf := config.Config{}
+	parser := flags.NewParser(&conf, flags.PrintErrors|flags.PassDoubleDash|flags.IgnoreUnknown)
+	args, err := parser.Parse()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	// TODO: add top level options into help text
+	c := cli.NewCLI("wuclient", version.Version)
+	c.Args = args
 	c.Commands = map[string]cli.CommandFactory{
 		"list": func() (cli.Command, error) {
-			return &command.ListCommand{}, nil
+			return &command.ListCommand{Conf: &conf}, nil
 		},
 		"get": func() (cli.Command, error) {
-			return &command.GetCommand{}, nil
+			return &command.GetCommand{Conf: &conf}, nil
 		},
 		"create": func() (cli.Command, error) {
-			return &command.CreateCommand{}, nil
-		},
-		"version": func() (cli.Command, error) {
-			return &command.VersionCommand{}, nil
+			return &command.CreateCommand{Conf: &conf}, nil
 		},
 	}
 

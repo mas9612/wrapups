@@ -8,30 +8,27 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	"github.com/mas9612/wrapups/pkg/auth"
+	"github.com/mas9612/wrapups/pkg/config"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
 // GetCommand implements get subcommand.
-type GetCommand struct{}
+type GetCommand struct {
+	Conf *config.Config
+}
 
 // Help returns the long-form help text of get subcommand.
 func (c *GetCommand) Help() string {
 	helpText := `
 Usage: wuclient get <id>
   Get wrapup document.
-
-Options:
-  -a, --address  Elasticsearch server address (default is localhost).
-  -p, --port     Elasticsearch server port (default is 9200).
 `
 	return strings.TrimSpace(helpText)
 }
 
 type getOptions struct {
-	Addr string `short:"a" long:"address" default:"localhost" description:"Wrapups server address. (default is localhost)"`
-	Port int    `short:"p" long:"port" default:"10000" description:"Wrapups server port. (default is 10000)"`
 	Args struct {
 		ID string `description:"Wrapup document ID."`
 	} `positional-args:"yes" required:"yes"`
@@ -51,7 +48,7 @@ func (c *GetCommand) Run(args []string) int {
 		return 1
 	}
 
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", opts.Addr, opts.Port), grpc.WithInsecure())
+	conn, err := grpc.Dial(c.Conf.WuserverURL, grpc.WithInsecure())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to connect to gRPC server: %v\n", err)
 		return 1
