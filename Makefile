@@ -11,6 +11,10 @@ all: dep test build-grpc build doc
 .PHONY: build
 build: build-server build-client
 
+install:
+	CGO_ENABLED=0 $(GOBIN) install $(LDFLAGS) github.com/mas9612/wrapups/cmd/wuserver
+	CGO_ENABLED=0 $(GOBIN) install $(LDFLAGS) github.com/mas9612/wrapups/cmd/wuclient
+
 .PHONY: build-server
 build-server:
 	CGO_ENABLED=0 $(GOBIN) build $(LDFLAGS) -o $(SERVER) ./cmd/wuserver
