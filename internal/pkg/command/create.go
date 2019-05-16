@@ -9,6 +9,7 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	"github.com/mas9612/wrapups/pkg/auth"
+	"github.com/mas9612/wrapups/pkg/config"
 	pb "github.com/mas9612/wrapups/pkg/wrapups"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -16,7 +17,9 @@ import (
 )
 
 // CreateCommand implements create subcommand.
-type CreateCommand struct{}
+type CreateCommand struct {
+	Conf *config.Config
+}
 
 // Help returns the long-form help text of create subcommand.
 func (c *CreateCommand) Help() string {
@@ -25,16 +28,12 @@ Usage: wuclient create -f <filename>
   Create new wrapup document.
 
 Options:
-  -a, --address  Elasticsearch server address (default is localhost).
-  -p, --port     Elasticsearch server port (default is 9200).
   -f, --file  Input filename. Required.
 `
 	return strings.TrimSpace(helpText)
 }
 
 type createOptions struct {
-	Addr     string `short:"a" long:"address" default:"localhost" description:"Wrapups server address. (default is localhost)"`
-	Port     int    `short:"p" long:"port" default:"10000" description:"Wrapups server port. (default is 10000)"`
 	Filename string `short:"f" long:"file" required:"yes" description:"Input filename. Required."`
 }
 
@@ -59,7 +58,7 @@ func (c *CreateCommand) Run(args []string) int {
 		return 1
 	}
 
-	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", opts.Addr, opts.Port), grpc.WithInsecure())
+	conn, err := grpc.Dial(c.Conf.WuserverURL, grpc.WithInsecure())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to connect to gRPC server: %v\n", err)
 		return 1
@@ -78,7 +77,7 @@ func (c *CreateCommand) Run(args []string) int {
 		return 1
 	}
 
-	token, err := auth.Token()
+	token, err := auth.Token(c.Conf.AuthserverURL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "auth error: %s\n", err.Error())
 		return 1
