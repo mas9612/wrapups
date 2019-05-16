@@ -56,7 +56,7 @@ func (c *GetCommand) Run(args []string) int {
 	defer conn.Close()
 	client := pb.NewWrapupsClient(conn)
 
-	token, err := auth.Token()
+	token, err := auth.Token(c.Conf.AuthserverURL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "auth error: %s\n", err.Error())
 		return 1

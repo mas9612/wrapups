@@ -77,7 +77,7 @@ func (c *CreateCommand) Run(args []string) int {
 		return 1
 	}
 
-	token, err := auth.Token()
+	token, err := auth.Token(c.Conf.AuthserverURL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "auth error: %s\n", err.Error())
 		return 1

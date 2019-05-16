@@ -13,10 +13,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-type config struct {
-	AuthserverURL string `json:"authserver_url"`
-}
-
 var (
 	// ErrNotConfigured is the error which indicates the user credential has not configured yet.
 	ErrNotConfigured = errors.New("credential not configured")
@@ -28,7 +24,9 @@ type credential struct {
 }
 
 // Token returns the token issued with configured credentials.
-func Token() (string, error) {
+//
+// Argument url is the url of authserver. It must be included both address and port number loke localhost:10000.
+func Token(url string) (string, error) {
 	userHome, err := os.UserHomeDir()
 	if err != nil {
 		panic("failed to get user home")
@@ -39,21 +37,6 @@ func Token() (string, error) {
 		if os.IsNotExist(err) {
 			os.Mkdir(wrapupsDir, 0700)
 		}
-	}
-
-	configPath := path.Join(wrapupsDir, "config")
-	var wrapupsConfig config
-	if _, err = os.Stat(configPath); err == nil {
-		b, err := ioutil.ReadFile(configPath)
-		if err != nil {
-			panic("failed to read config")
-		}
-		if err := json.Unmarshal(b, &wrapupsConfig); err != nil {
-			panic("failed to parse config file")
-		}
-	}
-	if wrapupsConfig.AuthserverURL == "" {
-		wrapupsConfig.AuthserverURL = "localhost:10000"
 	}
 
 	// check token
@@ -82,7 +65,7 @@ func Token() (string, error) {
 		return "", errors.Wrap(err, "failed to parse credential config")
 	}
 
-	conn, err := grpc.Dial(wrapupsConfig.AuthserverURL, grpc.WithInsecure())
+	conn, err := grpc.Dial(url, grpc.WithInsecure())
 	if err != nil {
 		return "", errors.Wrap(err, "failed to create gRPC client")
 	}
