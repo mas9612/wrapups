@@ -18,14 +18,6 @@
   version = "v0.1.0"
 
 [[projects]]
-  digest = "1:76dc72490af7174349349838f2fe118996381b31ea83243812a97e5a0fd5ed55"
-  name = "github.com/dgrijalva/jwt-go"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
-  version = "v3.2.0"
-
-[[projects]]
   digest = "1:865079840386857c809b72ce300be7580cb50d3d3129ce11bf9aa6ca2bc1934a"
   name = "github.com/fatih/color"
   packages = ["."]
@@ -116,12 +108,9 @@
   revision = "1de009706dbeb9d05f18586f0735fcdb7c524481"
 
 [[projects]]
-  digest = "1:b97588d4bc787a24482379ec530c797eede6b96e5241c96d24c1edea68e2b112"
+  digest = "1:276c28adb68dc892f61e9001bbeddfe480a48b62d3829aaf39e4d7124dda5bc1"
   name = "github.com/mas9612/authserver"
-  packages = [
-    "pkg/authserver",
-    "pkg/server",
-  ]
+  packages = ["pkg/authserver"]
   pruneopts = "UT"
   revision = "b6796501759379dc1a3d45b8935b2e3945004557"
   version = "v0.2"
@@ -182,14 +171,6 @@
   pruneopts = "UT"
   revision = "3ef9b31a6a0613ae832e7ecf208374027c3b2343"
   version = "v1.2.1"
-
-[[projects]]
-  digest = "1:274f67cb6fed9588ea2521ecdac05a6d62a8c51c074c1fccc6a49a40ba80e925"
-  name = "github.com/satori/go.uuid"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
-  version = "v1.2.0"
 
 [[projects]]
   digest = "1:3c1a69cdae3501bf75e76d0d86dc6f2b0a7421bc205c0cb7b96b19eed464a34d"
@@ -324,22 +305,6 @@
   version = "v1.20.0"
 
 [[projects]]
-  digest = "1:af07c44dc04418be522bfd4e21ca9130d58169ea084e3a883e23772003a381c4"
-  name = "gopkg.in/asn1-ber.v1"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "f715ec2f112d1e4195b827ad68cf44017a3ef2b1"
-  version = "v1.3"
-
-[[projects]]
-  digest = "1:e9a0fa7c2dfc90e0fae16be5825ad98074d8704f5fcebfdc289a8e8fb0f8e4b5"
-  name = "gopkg.in/ldap.v3"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9f0d712775a0973b7824a1585a86a4ea1d5263d9"
-  version = "v3.0.3"
-
-[[projects]]
   digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -351,7 +316,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/dgrijalva/jwt-go",
     "github.com/golang/protobuf/proto",
     "github.com/golang/protobuf/ptypes",
     "github.com/golang/protobuf/ptypes/timestamp",
@@ -359,7 +323,6 @@
     "github.com/grpc-ecosystem/go-grpc-middleware/auth",
     "github.com/jessevdk/go-flags",
     "github.com/mas9612/authserver/pkg/authserver",
-    "github.com/mas9612/authserver/pkg/server",
     "github.com/mitchellh/cli",
     "github.com/olivere/elastic",
     "github.com/pkg/errors",
